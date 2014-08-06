@@ -93,7 +93,8 @@ class OpenStackProvider(providers.BaseProvider):
                 e_id = ept['id']
                 e_url = ept['publicURL']
 
-                e = defaults.copy()
+#                e = defaults.copy()
+                e = {}
                 e.update({'endpoint_url': e_url,
                           'compute_api_type': e_type,
                           'compute_api_version': e_version})
@@ -105,7 +106,8 @@ class OpenStackProvider(providers.BaseProvider):
     def get_templates(self):
         flavors = {}
 
-        defaults = {"platform": "amd64", "network": "private"}
+        defaults = {"template_platform": "amd64",
+                    "template_network": "private"}
         defaults.update(self.static.get_template_defaults(prefix=True))
 
         for flavor in self.api.flavors.list(detailed=True):
@@ -124,10 +126,10 @@ class OpenStackProvider(providers.BaseProvider):
 
         template = {
             'image_name': None,
-            'image description': None,
+            'image_description': None,
             'image_version': None,
             'image_marketplace_id': None,
-            'image_occi_id': None,
+            'image_id': None,
             'image_os_family': None,
             'image_os_name': None,
             'image_os_version': None,
@@ -138,6 +140,7 @@ class OpenStackProvider(providers.BaseProvider):
         for image in self.api.images.list(detailed=True):
             aux = template.copy()
             aux.update(defaults)
+            link = None
             for link in image.links:
                 # TODO(aloga): Check if this is the needed parameter
                 if link.get('type',
@@ -147,9 +150,9 @@ class OpenStackProvider(providers.BaseProvider):
             # FIXME(aloga): we need to add the version, etc from
             # metadata
             aux.update({'image_name': image.name,
-                        'occi_id': 'os#%s' % image.id,
+                        'image_id': 'os#%s' % image.id,
                         'image_description': image.name,
-                        'marketplace_id': link,
+                        'image_marketplace_id': link,
             })
             image.metadata.pop('image_name', None)
             image.metadata.pop('occi_id', None)
